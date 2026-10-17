@@ -1,4 +1,4 @@
-# ---- runtime / user data (never commit) ----
+﻿# ---- runtime / user data (never commit) ----
 config.json
 index.db
 index.db.tmp
@@ -23,7 +23,7 @@ desktop.ini
 .DS_Store
 
 # ---- local scratch ----
-tools/_*.txt
+tools/_*
 tools/dev/
 docs/icon/
 *.tmp
