@@ -29,9 +29,11 @@ jobs:
           --distpath release --workpath build\work --specpath build src\quickfind.py
 
       - name: Build QuickFind-Setup.exe
+        # NOTE: --add-binary paths are resolved relative to --specpath (build\), so use an
+        # absolute path here; otherwise PyInstaller looks for build\release\QuickFind.exe.
         run: >
           pyinstaller --noconfirm --onefile --console --name QuickFind-Setup
-          --add-binary "release\QuickFind.exe;."
+          --add-binary "${{ github.workspace }}\release\QuickFind.exe;."
           --distpath release --workpath build\work2 --specpath build src\installer.py
 
       - name: Show artefacts
