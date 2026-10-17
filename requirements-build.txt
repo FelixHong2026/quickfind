@@ -1,0 +1,2 @@
+# Build-time only — QuickFind needs nothing at runtime beyond the stdlib.
+pyinstaller>=6.0,<7

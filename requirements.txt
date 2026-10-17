@@ -1,0 +1,12 @@
+# QuickFind runtime dependencies
+#
+# QuickFind itself uses ONLY the Python standard library
+# (ctypes, sqlite3, tkinter, os, json, threading, queue, subprocess).
+# No third-party package is required to run it.
+#
+# The only build-time dependency is PyInstaller, which turns the script
+# into a standalone .exe. Install it with:
+#
+#     pip install -r requirements-build.txt
+#
+# (kept in a separate file so `pip install -r requirements.txt` stays a no-op)

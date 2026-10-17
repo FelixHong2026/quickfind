@@ -1,0 +1,54 @@
+name: build
+
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # Pin to a well-supported version rather than the newest release.
+          python-version: '3.12'
+
+      - name: Install build dependency
+        run: pip install -r requirements-build.txt
+
+      - name: Syntax check
+        run: python -m py_compile src\quickfind.py src\quickfind_locales.py src\installer.py
+
+      - name: Build QuickFind.exe
+        run: >
+          pyinstaller --noconfirm --onefile --windowed --name QuickFind
+          --distpath release --workpath build\work --specpath build src\quickfind.py
+
+      - name: Build QuickFind-Setup.exe
+        run: >
+          pyinstaller --noconfirm --onefile --console --name QuickFind-Setup
+          --add-binary "release\QuickFind.exe;."
+          --distpath release --workpath build\work2 --specpath build src\installer.py
+
+      - name: Show artefacts
+        run: Get-ChildItem release -Filter *.exe | Select-Object Name, Length
+        shell: pwsh
+
+      - name: Upload artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuickFind-windows-x64
+          path: release/*.exe
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

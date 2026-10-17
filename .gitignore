@@ -1,0 +1,28 @@
+# ---- runtime / user data (never commit) ----
+config.json
+index.db
+index.db.tmp
+quickfind.log
+*.log
+
+# ---- build output ----
+build/work/
+build/work2/
+build/*.spec
+release/
+dist/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ---- editors / OS ----
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---- local scratch ----
+tools/_*.txt
+tools/dev/
+*.tmp
