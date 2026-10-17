@@ -24,6 +24,8 @@ Set-Location $Src
 
 Write-Output '=== 1/2 build QuickFind.exe ==='
 & $Py -m PyInstaller --noconfirm --onefile --windowed --name QuickFind `
+    --icon (Join-Path $Root 'assets\quickfind.ico') `
+    --add-data "$(Join-Path $Root 'assets\quickfind.ico');assets" `
     --distpath $Rel --workpath $Wk --specpath $Spc (Join-Path $Src 'quickfind.py')
 if ($LASTEXITCODE -ne 0) { Write-Error 'build QuickFind.exe FAILED'; exit 1 }
 

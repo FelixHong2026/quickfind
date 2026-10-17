@@ -33,6 +33,24 @@ else:
 CONFIG_PATH = os.path.join(APP_DIR, "config.json")
 DB_PATH = os.path.join(APP_DIR, "index.db")
 
+
+def icon_path():
+    """Locate assets/quickfind.ico both when frozen and when run from src/."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    cands = []
+    if getattr(sys, "frozen", False):
+        base = getattr(sys, "_MEIPASS", "")
+        if base:
+            cands.append(os.path.join(base, "assets", "quickfind.ico"))
+        cands.append(os.path.join(APP_DIR, "assets", "quickfind.ico"))
+    cands.append(os.path.join(here, "..", "assets", "quickfind.ico"))
+    cands.append(os.path.join(APP_DIR, "..", "assets", "quickfind.ico"))
+    for c in cands:
+        c = os.path.normpath(c)
+        if os.path.isfile(c):
+            return c
+    return ""
+
 DEFAULT_CONFIG = {
     "roots": [os.path.expanduser("~")],
     "exclude_dirs": [
@@ -85,7 +103,7 @@ def resolve_fm(cfg):
 
 # ---------------------------------------------------------------- meta
 APP_NAME = "QuickFind"
-VERSION = "0.9.1 Beta"
+VERSION = "0.9.2 Beta"
 BUILD = "20261017"
 DEVELOPER = "FelixHong"
 EMAIL = "fghsxp2026@126.com"
@@ -558,6 +576,13 @@ _u32.CreateWindowExW.argtypes = [wt.DWORD, wt.LPCWSTR, wt.LPCWSTR, wt.DWORD,
 _u32.CreateWindowExW.restype = wt.HWND
 _u32.LoadIconW.argtypes = [wt.HINSTANCE, ctypes.c_void_p]
 _u32.LoadIconW.restype = wt.HICON
+_u32.LoadImageW.argtypes = [wt.HINSTANCE, wt.LPCWSTR, wt.UINT, ctypes.c_int,
+                            ctypes.c_int, wt.UINT]
+_u32.LoadImageW.restype = ctypes.c_void_p
+_u32.DestroyIcon.argtypes = [ctypes.c_void_p]
+_u32.GetSystemMetrics.argtypes = [ctypes.c_int]
+IMAGE_ICON, LR_LOADFROMFILE = 1, 0x0010
+SM_CXSMICON, SM_CYSMICON = 49, 50
 _u32.DestroyWindow.argtypes = [wt.HWND]
 _shell.Shell_NotifyIconW.argtypes = [wt.DWORD, ctypes.POINTER(NOTIFYICONDATAW)]
 
@@ -569,11 +594,13 @@ class TrayThread(threading.Thread):
     """A message-only window + Shell_NotifyIcon. Sends events through a queue so the
     Tk main thread stays the only thread touching widgets."""
 
-    def __init__(self, q, tooltip="QuickFind"):
+    def __init__(self, q, tooltip="QuickFind", ico=""):
         super().__init__(daemon=True)
         self.q = q
         self.tooltip = tooltip[:127]
+        self.ico = ico
         self.hwnd = None
+        self.hicon = None
         self.tid = 0
         self.ready = threading.Event()
         self.ok = False
@@ -584,6 +611,20 @@ class TrayThread(threading.Thread):
                 _u32.PostThreadMessageW(self.tid, 0x0012, 0, 0)  # WM_QUIT
             except Exception:
                 pass
+
+    def _load_icon(self):
+        """Prefer our own .ico (crisp at 16px); fall back to the generic Windows icon."""
+        try:
+            if self.ico and os.path.isfile(self.ico):
+                cx = _u32.GetSystemMetrics(SM_CXSMICON) or 16
+                cy = _u32.GetSystemMetrics(SM_CYSMICON) or 16
+                h = _u32.LoadImageW(None, self.ico, IMAGE_ICON, cx, cy, LR_LOADFROMFILE)
+                if h:
+                    self.hicon = h
+                    return h
+        except Exception as ex:
+            _log("tray icon load failed: %r" % (ex,))
+        return _u32.LoadIconW(None, ctypes.c_void_p(IDI_APPLICATION))
 
     def run(self):
         self.tid = _k32.GetCurrentThreadId()
@@ -630,7 +671,7 @@ class TrayThread(threading.Thread):
             nid.uID = 1
             nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP
             nid.uCallbackMessage = WM_TRAY
-            nid.hIcon = _u32.LoadIconW(None, ctypes.c_void_p(IDI_APPLICATION))
+            nid.hIcon = self._load_icon()
             nid.szTip = self.tooltip
             if not _shell.Shell_NotifyIconW(NIM_ADD, ctypes.byref(nid)):
                 self.q.put("tray-failed")
@@ -648,6 +689,11 @@ class TrayThread(threading.Thread):
 
             _shell.Shell_NotifyIconW(NIM_DELETE, ctypes.byref(nid))
             _u32.DestroyWindow(self.hwnd)
+            if self.hicon:
+                try:
+                    _u32.DestroyIcon(self.hicon)
+                except Exception:
+                    pass
         except Exception as ex:
             _log("tray thread error: %r" % (ex,))
             self.q.put("tray-failed")
@@ -670,6 +716,12 @@ class QuickFind(tk.Tk):
         self._menus = []
 
         self.title(tr("win_title", hotkey=cfg.get("hotkey", "")))
+        ico = icon_path()
+        if ico:
+            try:
+                self.iconbitmap(ico)
+            except Exception:
+                pass
         w, h = cfg["window_width"], cfg["window_height"]
         sw, sh = self.winfo_screenwidth(), self.winfo_screenheight()
         geo = cfg.get("last_geometry")
@@ -730,7 +782,8 @@ class QuickFind(tk.Tk):
         self.hk.start()
 
         # 系统托盘：进程常驻的可视凭证（✕ = 隐藏到托盘，热键永远有效）
-        self.tray = TrayThread(self.evq, tooltip="QuickFind — %s" % cfg.get("hotkey", ""))
+        self.tray = TrayThread(self.evq, tooltip="QuickFind — %s" % cfg.get("hotkey", ""),
+                               ico=icon_path())
         self.tray.start()
 
         # 首次运行 / 索引为空 / --show：直接显示；否则隐藏，靠热键唤起

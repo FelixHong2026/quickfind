@@ -1,5 +1,7 @@
 # QuickFind
 
+<img src="assets/quickfind-256.png" width="96" align="right" alt="QuickFind icon">
+
 **A lightweight, offline instant file search for Windows — with one-key reveal in Directory Opus or File Explorer.**
 
 Type a few characters, hit Enter, done. Right-click a result to jump straight to the original file in your file manager — with the file already selected.

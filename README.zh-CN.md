@@ -1,5 +1,7 @@
 # QuickFind
 
+<img src="assets/quickfind-256.png" width="96" align="right" alt="QuickFind 图标">
+
 **轻量、纯离线的 Windows 全盘秒搜工具 —— 一键在 Directory Opus 或资源管理器中定位文件。**
 
 敲几个字，回车打开。右键结果直接在文件管理器里跳到原位置，并且**已经选中**那个文件。

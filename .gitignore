@@ -25,4 +25,5 @@ desktop.ini
 # ---- local scratch ----
 tools/_*.txt
 tools/dev/
+docs/icon/
 *.tmp

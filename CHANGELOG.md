@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versioning is [SemVer](https://semver.org/).
 
+## [0.9.2 Beta] - 2026-10-17
+
+### Added
+- **Proper application icon** — a folder with a magnifier, rendered per size (16/24/32/48/64/128/256)
+  instead of the generic Windows placeholder. Used by the tray icon, the window title bar and
+  the exe file itself (so Explorer shows it too).
+  * each size is rendered from an 8x supersampled source rather than downscaled from 256px,
+    which keeps the 16px tray variant legible
+  * `assets/quickfind.ico` is bundled with `--add-data`, so the tray can load it at runtime
+
 ## [0.9.1 Beta] - 2026-10-17
 
 ### Added
