@@ -6,6 +6,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Needed so the release step can create a Release and upload assets
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
