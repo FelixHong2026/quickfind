@@ -9,6 +9,20 @@
 
 ---
 
+## 界面截图
+
+<img src="docs/screenshots/01-main-zh.jpg" width="760" alt="QuickFind 主界面 —— 边打边搜">
+
+<p>
+  <img src="docs/screenshots/02-context-menu-zh.jpg" width="400" alt="右键即可在文件管理器中定位">
+  <img src="docs/screenshots/03-settings-zh.jpg" width="225" alt="设置：皮肤 / 语言 / 快捷键 / 开机启动">
+  <img src="docs/screenshots/04-about-zh.jpg" width="300" alt="关于与许可">
+</p>
+
+<sub>皮肤、语言、快捷键、开机启动、✕ 行为都在右上角 ⚙ 菜单里。</sub>
+
+---
+
 ## 为什么要再造一个？
 
 | | QuickFind | Everything | Listary |

@@ -9,6 +9,19 @@ Type a few characters, hit Enter, done. Right-click a result to jump straight to
 
 ---
 
+## Screenshots
+
+<img src="docs/screenshots/01-main-en.jpg" width="760" alt="QuickFind — search as you type">
+
+<p>
+  <img src="docs/screenshots/02-context-menu-en.jpg" width="470" alt="Right-click to reveal the file in your file manager">
+  <img src="docs/screenshots/03-settings-en.jpg" width="255" alt="Settings: theme, language, shortcut, startup">
+</p>
+
+<sub>Theme, language, shortcut key, run-at-startup and the ✕ behaviour all live in the ⚙ menu.</sub>
+
+---
+
 ## Why another file search?
 
 | | QuickFind | Everything | Listary |
