@@ -41,7 +41,7 @@ QuickFind is **not** the fastest indexer out there — it walks the filesystem w
 - **Global hotkey** (default `Ctrl+Shift+/`, freely rebindable — digits, letters, F-keys and symbols all supported)
 - **Reveal in your file manager** — Directory Opus (`dopusrt /cmd Go` + `Select`) or File Explorer (`/select`), auto-detected
 - **Five themes** — follow system / pure black / dark grey / light / grey
-- **X behaviour is configurable** — minimize to taskbar (default) or quit
+- **System tray icon** — closing the window hides it to the tray and keeps the process alive, so the global hotkey never stops working. Left-click the tray icon to show it again; right-click for show/about/quit. `✕` behaviour is configurable (hide to tray / minimize to taskbar / quit)
 - **Run at Windows startup** — one checkbox, no registry hunting
 - **Clean index** — skips system caches, `node_modules`, virtualenvs, cloud placeholders (`OFFLINE`/`RECALL_ON_*`) and network locations (UNC / mapped drives), so the index stays small and fast
 - **Fully offline** — no network calls, no telemetry, no accounts
@@ -106,7 +106,7 @@ Default index root is your home folder. To index more, edit `config.json` (see b
   "dopus_rt_path": "",            // empty = auto-detect Directory Opus
   "lang": "auto",                 // "auto" | "en" | "zh"
   "skin": "dark",                 // auto | black | dark | light | gray
-  "close_action": "minimize",     // minimize | quit
+  "close_action": "tray",       // tray | minimize | quit
   "max_results": 400,
   "rebuild_hours": 12,            // auto-rebuild if the index is older; 0 = never
   "include_dirs": true,

@@ -17,7 +17,7 @@ import winreg
 APP_NAME = "QuickFind"
 APP_DESC = "QuickFind - 个人高速文件查询工具 (Ctrl+Shift+/)"
 APP_EXE = "QuickFind.exe"
-VERSION = "0.9.0 Beta"
+VERSION = "0.9.1 Beta"
 
 LOCALAPPDATA = os.environ.get("LOCALAPPDATA", os.path.expanduser("~"))
 INSTALL_DIR = os.path.join(LOCALAPPDATA, "Programs", APP_NAME)

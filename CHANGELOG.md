@@ -4,6 +4,26 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versioning is [SemVer](https://semver.org/).
 
+## [0.9.1 Beta] - 2026-10-17
+
+### Added
+- **System tray icon** (`Shell_NotifyIcon` via ctypes, still zero third-party packages).
+  Closing the window now hides it to the tray **and keeps the process alive**, so the
+  global hotkey keeps working — previously quitting killed the hotkey with it.
+  * left-click the tray icon → show / hide
+  * right-click → Show QuickFind / About / Quit
+
+### Changed
+- `close_action` gains a third value and its default changed from `minimize` to `tray`:
+  `tray` (hide to tray) | `minimize` (minimize to taskbar) | `quit`
+- The settings menu shows all three options under "When clicking ✕".
+
+### Fixed
+- Clicking ✕ looked like it did nothing: the window minimised to the taskbar with no
+  obvious feedback, so it was easy to click repeatedly without noticing. Hiding to a
+  visible tray icon makes the state obvious.
+- The tray icon is removed cleanly on quit (no ghost icon left in the notification area).
+
 ## [0.9.0 Beta] - 2026-10-17
 
 First public release.

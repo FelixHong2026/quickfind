@@ -51,7 +51,7 @@ DEFAULT_CONFIG = {
     "exclude_network": True,
     "follow_dir_links": False,
     "skin": "dark",
-    "close_action": "minimize",
+    "close_action": "tray",
     "window_width": 900,
     "window_height": 520,
 }
@@ -85,7 +85,7 @@ def resolve_fm(cfg):
 
 # ---------------------------------------------------------------- meta
 APP_NAME = "QuickFind"
-VERSION = "0.9.0 Beta"
+VERSION = "0.9.1 Beta"
 BUILD = "20261017"
 DEVELOPER = "FelixHong"
 EMAIL = "fghsxp2026@126.com"
@@ -494,6 +494,166 @@ class HotkeyThread(threading.Thread):
             user32.UnregisterHotKey(None, self.hotkey_id)
 
 
+# ---------------------------------------------------------------- tray icon
+# Minimal Shell_NotifyIcon implementation (ctypes, no third-party packages).
+WM_APP = 0x8000
+WM_TRAY = WM_APP + 1
+WM_LBUTTONUP, WM_RBUTTONUP, WM_LBUTTONDBLCLK = 0x0202, 0x0205, 0x0203
+NIM_ADD, NIM_MODIFY, NIM_DELETE = 0, 1, 2
+NIF_MESSAGE, NIF_ICON, NIF_TIP = 0x01, 0x02, 0x04
+IDI_APPLICATION = 32512
+
+
+class _GUID(ctypes.Structure):
+    _fields_ = [("Data1", wt.DWORD), ("Data2", wt.WORD), ("Data3", wt.WORD),
+                ("Data4", ctypes.c_byte * 8)]
+
+
+class NOTIFYICONDATAW(ctypes.Structure):
+    _fields_ = [
+        ("cbSize", wt.DWORD),
+        ("hWnd", wt.HWND),
+        ("uID", wt.UINT),
+        ("uFlags", wt.UINT),
+        ("uCallbackMessage", wt.UINT),
+        ("hIcon", wt.HICON),
+        ("szTip", wt.WCHAR * 128),
+        ("dwState", wt.DWORD),
+        ("dwStateMask", wt.DWORD),
+        ("szInfo", wt.WCHAR * 256),
+        ("uVersion", wt.UINT),
+        ("szInfoTitle", wt.WCHAR * 64),
+        ("dwInfoFlags", wt.DWORD),
+        ("guidItem", _GUID),
+        ("hBalloonIcon", wt.HICON),
+    ]
+
+
+class WNDCLASSW(ctypes.Structure):
+    _fields_ = [
+        ("style", wt.UINT),
+        ("lpfnWndProc", ctypes.c_void_p),
+        ("cbClsExtra", ctypes.c_int),
+        ("cbWndExtra", ctypes.c_int),
+        ("hInstance", wt.HINSTANCE),
+        ("hIcon", wt.HICON),
+        ("hCursor", ctypes.c_void_p),
+        ("hbrBackground", ctypes.c_void_p),
+        ("lpszMenuName", wt.LPCWSTR),
+        ("lpszClassName", wt.LPCWSTR),
+    ]
+
+
+WNDPROC = ctypes.WINFUNCTYPE(ctypes.c_void_p, wt.HWND, wt.UINT, wt.WPARAM, wt.LPARAM)
+
+_u32 = ctypes.windll.user32
+_k32 = ctypes.windll.kernel32
+_shell = ctypes.windll.shell32
+_u32.DefWindowProcW.argtypes = [wt.HWND, wt.UINT, wt.WPARAM, wt.LPARAM]
+_u32.DefWindowProcW.restype = ctypes.c_void_p
+_u32.RegisterClassW.argtypes = [ctypes.POINTER(WNDCLASSW)]
+_u32.CreateWindowExW.argtypes = [wt.DWORD, wt.LPCWSTR, wt.LPCWSTR, wt.DWORD,
+                                 ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                 wt.HWND, ctypes.c_void_p, wt.HINSTANCE, ctypes.c_void_p]
+_u32.CreateWindowExW.restype = wt.HWND
+_u32.LoadIconW.argtypes = [wt.HINSTANCE, ctypes.c_void_p]
+_u32.LoadIconW.restype = wt.HICON
+_u32.DestroyWindow.argtypes = [wt.HWND]
+_shell.Shell_NotifyIconW.argtypes = [wt.DWORD, ctypes.POINTER(NOTIFYICONDATAW)]
+
+# keep the WNDPROC callback alive for the process lifetime
+_WNDPROC_REF = []
+
+
+class TrayThread(threading.Thread):
+    """A message-only window + Shell_NotifyIcon. Sends events through a queue so the
+    Tk main thread stays the only thread touching widgets."""
+
+    def __init__(self, q, tooltip="QuickFind"):
+        super().__init__(daemon=True)
+        self.q = q
+        self.tooltip = tooltip[:127]
+        self.hwnd = None
+        self.tid = 0
+        self.ready = threading.Event()
+        self.ok = False
+
+    def stop(self):
+        if self.tid:
+            try:
+                _u32.PostThreadMessageW(self.tid, 0x0012, 0, 0)  # WM_QUIT
+            except Exception:
+                pass
+
+    def run(self):
+        self.tid = _k32.GetCurrentThreadId()
+        try:
+            hinst = _k32.GetModuleHandleW(None)
+            cls_name = "QuickFindTrayWnd"
+
+            def wndproc(hwnd, msg, wparam, lparam):
+                if msg == WM_TRAY:
+                    ev = int(lparam) & 0xFFFF
+                    if ev in (WM_LBUTTONUP, WM_LBUTTONDBLCLK):
+                        self.q.put("tray-toggle")
+                    elif ev == WM_RBUTTONUP:
+                        self.q.put("tray-menu")
+                    return 0
+                if msg == 0x0010:      # WM_CLOSE
+                    _u32.DestroyWindow(hwnd)
+                    return 0
+                return _u32.DefWindowProcW(hwnd, msg, wparam, lparam)
+
+            proc = WNDPROC(wndproc)
+            _WNDPROC_REF.append(proc)
+
+            wc = WNDCLASSW()
+            wc.lpfnWndProc = ctypes.cast(proc, ctypes.c_void_p)
+            wc.hInstance = hinst
+            wc.lpszClassName = cls_name
+            if not _u32.RegisterClassW(ctypes.byref(wc)):
+                self.q.put("tray-failed")
+                self.ready.set()
+                return
+
+            HWND_MESSAGE = wt.HWND(-3)
+            self.hwnd = _u32.CreateWindowExW(0, cls_name, cls_name, 0, 0, 0, 0, 0,
+                                             HWND_MESSAGE, None, hinst, None)
+            if not self.hwnd:
+                self.q.put("tray-failed")
+                self.ready.set()
+                return
+
+            nid = NOTIFYICONDATAW()
+            nid.cbSize = ctypes.sizeof(NOTIFYICONDATAW)
+            nid.hWnd = self.hwnd
+            nid.uID = 1
+            nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP
+            nid.uCallbackMessage = WM_TRAY
+            nid.hIcon = _u32.LoadIconW(None, ctypes.c_void_p(IDI_APPLICATION))
+            nid.szTip = self.tooltip
+            if not _shell.Shell_NotifyIconW(NIM_ADD, ctypes.byref(nid)):
+                self.q.put("tray-failed")
+                self.ready.set()
+                return
+
+            self.ok = True
+            self.ready.set()
+            self.q.put("tray-ok")
+
+            msg = wt.MSG()
+            while _u32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
+                _u32.TranslateMessage(ctypes.byref(msg))
+                _u32.DispatchMessageW(ctypes.byref(msg))
+
+            _shell.Shell_NotifyIconW(NIM_DELETE, ctypes.byref(nid))
+            _u32.DestroyWindow(self.hwnd)
+        except Exception as ex:
+            _log("tray thread error: %r" % (ex,))
+            self.q.put("tray-failed")
+            self.ready.set()
+
+
 # ---------------------------------------------------------------- UI
 class QuickFind(tk.Tk):
     def __init__(self, cfg):
@@ -569,6 +729,10 @@ class QuickFind(tk.Tk):
         self.hk = HotkeyThread(cfg["hotkey"], self.evq)
         self.hk.start()
 
+        # 系统托盘：进程常驻的可视凭证（✕ = 隐藏到托盘，热键永远有效）
+        self.tray = TrayThread(self.evq, tooltip="QuickFind — %s" % cfg.get("hotkey", ""))
+        self.tray.start()
+
         # 首次运行 / 索引为空 / --show：直接显示；否则隐藏，靠热键唤起
         if "--show" in sys.argv or not self.paths:
             self.show()
@@ -632,9 +796,11 @@ class QuickFind(tk.Tk):
         self.settings_menu.add_separator()
 
         self.var_autostart = tk.BooleanVar(value=self._autostart_on())
-        self.var_close = tk.StringVar(value=str(cfg.get("close_action", "minimize")))
+        self.var_close = tk.StringVar(value=str(cfg.get("close_action", "tray")))
         close_menu = tk.Menu(self.settings_menu, tearoff=0)
         self._menus.append(close_menu)
+        close_menu.add_radiobutton(label=tr("close_tray"), variable=self.var_close,
+                                   value="tray", command=self._save_close_action)
         close_menu.add_radiobutton(label=tr("close_minimize"), variable=self.var_close,
                                    value="minimize", command=self._save_close_action)
         close_menu.add_radiobutton(label=tr("close_quit"), variable=self.var_close,
@@ -727,6 +893,16 @@ class QuickFind(tk.Tk):
                         _log("hotkey registered OK: " + self.cfg["hotkey"])
                     elif item == "hotkey-invalid":
                         _log("hotkey spec invalid: " + self.cfg["hotkey"])
+                    elif item == "tray-ok":
+                        _log("tray icon installed")
+                    elif item == "tray-failed":
+                        _log("tray icon FAILED -- falling back to quit-on-close")
+                    elif item == "tray-toggle":
+                        _log("tray clicked -> toggle()")
+                        self.toggle()
+                    elif item == "tray-menu":
+                        _log("tray right-click -> menu")
+                        self.show_tray_menu()
             # 处理完再动 UI
             if self.paths and self.entry.get():
                 self.run_search()
@@ -1106,11 +1282,13 @@ class QuickFind(tk.Tk):
         self.cfg["close_action"] = self.var_close.get()
         save_config(self.cfg)
         _log("close_action -> %s" % self.cfg["close_action"])
-        self.update_status(tr("st_close_min") if self.cfg["close_action"] == "minimize"
-                            else tr("st_close_quit"))
+        k = self.cfg["close_action"]
+        self.update_status(tr("st_close_tray") if k == "tray"
+                           else tr("st_close_min") if k == "minimize"
+                           else tr("st_close_quit"))
 
     def on_close(self):
-        act = str(self.cfg.get("close_action", "minimize"))
+        act = str(self.cfg.get("close_action", "tray"))
         try:
             if hasattr(self, "var_close"):
                 act = self.var_close.get() or act
@@ -1119,10 +1297,35 @@ class QuickFind(tk.Tk):
         _log("WM_CLOSE -> %s" % act)
         if act == "quit":
             self.quit_app()
-        elif act == "hide":
-            self.hide()
-        else:
+        elif act == "minimize":
             self.iconify()
+        else:
+            # default: hide to the system tray -- the process stays alive so the
+            # global hotkey keeps working (this is the whole point of the tray icon)
+            self.hide()
+
+    def show_tray_menu(self):
+        """Right-click on the tray icon: small menu at the cursor."""
+        if not hasattr(self, "tray_menu"):
+            t = resolve_theme(self.skin)
+            self.tray_menu = tk.Menu(self, tearoff=0)
+            self._menus.append(self.tray_menu)
+            self.tray_menu.add_command(label=tr("tray_show"), command=self.show)
+            self.tray_menu.add_command(label=tr("about"), command=self.show_about)
+            self.tray_menu.add_separator()
+            self.tray_menu.add_command(label=tr("quit"), command=self.quit_app)
+            try:
+                self.tray_menu.configure(bg=t["menu"], fg=t["menufg"],
+                                         activebackground=t["sel"],
+                                         activeforeground=t["selfg"])
+            except Exception:
+                pass
+        try:
+            pt = wt.POINT()
+            _u32.GetCursorPos(ctypes.byref(pt))
+            self.tray_menu.tk_popup(pt.x, pt.y)
+        except Exception as ex:
+            _log("tray menu err: %r" % (ex,))
 
     # ---------------- 显示
     def show(self):
@@ -1146,6 +1349,12 @@ class QuickFind(tk.Tk):
 
     def quit_app(self):
         _log("quit_app() called")
+        try:
+            if getattr(self, "tray", None):
+                self.tray.stop()
+                self.tray.join(timeout=1.5)
+        except Exception:
+            pass
         try:
             self.cfg["last_geometry"] = self.geometry()
             save_config(self.cfg)

@@ -34,6 +34,8 @@ EN = {
     "autostart": "Run at Windows startup",
     "close_action": "When clicking ✕",
     "close_minimize": "Minimize to taskbar",
+    "close_tray": "Hide to system tray",
+    "tray_show": "Show QuickFind",
     "close_quit": "Quit the program",
     "language": "Language",
     "lang_auto": "Follow system",
@@ -60,6 +62,7 @@ EN = {
     "st_autostart_on": "Run at startup: ON",
     "st_autostart_off": "Run at startup: OFF",
     "st_close_min": "✕ action: minimize to taskbar",
+    "st_close_tray": "✕ action: hide to system tray",
     "st_close_quit": "✕ action: quit",
     "st_hotkey_failed": "Global hotkey registration failed (already in use?)",
 
@@ -167,6 +170,8 @@ ZH = {
     "autostart": "允许开机启动",
     "close_action": "点击 ✕ 时",
     "close_minimize": "隐藏到任务栏",
+    "close_tray": "隐藏到托盘",
+    "tray_show": "显示 QuickFind",
     "close_quit": "关闭并退出",
     "language": "语言",
     "lang_auto": "跟随系统",
@@ -191,6 +196,7 @@ ZH = {
     "st_autostart_on": "开机启动：已启用",
     "st_autostart_off": "开机启动：已关闭",
     "st_close_min": "点击 ✕ :隐藏到任务栏",
+    "st_close_tray": "点击 ✕ :隐藏到托盘",
     "st_close_quit": "点击 ✕ :关闭并退出",
     "st_hotkey_failed": "全局热键注册失败（被占用？）",
 

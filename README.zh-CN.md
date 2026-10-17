@@ -44,7 +44,7 @@
 - **全局热键**（默认 `Ctrl+Shift+/`，可任意改：数字、字母、F 键、符号都支持）
 - **在文件管理器中定位** —— Directory Opus（`dopusrt /cmd Go` + `Select`）或资源管理器（`/select`），自动探测
 - **5 套皮肤** —— 跟随系统 / 纯黑 / 深灰 / 白底 / 灰度
-- **✕ 行为可配置** —— 隐藏到任务栏（默认）或退出
+- **系统托盘图标** —— 点 ✕ 是**隐藏到托盘**，进程常驻，所以**全局热键永远有效**。左键点托盘图标唤回，右键可显示/关于/退出。✕ 行为可配置（隐藏到托盘 / 最小化到任务栏 / 直接退出）
 - **开机启动** —— 一个勾选框搞定
 - **索引干净** —— 自动跳过系统缓存、`node_modules`、虚拟环境、云占位文件（`OFFLINE`/`RECALL_ON_*`）和网络位置（UNC/网络盘）
 - **完全离线** —— 不联网、无遥测、不需要账号
@@ -110,7 +110,7 @@ python src\quickfind.py
   "dopus_rt_path": "",            // 留空 = 自动探测 Directory Opus
   "lang": "auto",                 // auto | en | zh
   "skin": "dark",                 // auto | black | dark | light | gray
-  "close_action": "minimize",     // minimize | quit
+  "close_action": "tray",         // tray | minimize | quit
   "max_results": 400,
   "rebuild_hours": 12,            // 索引超期自动重建；0 = 从不
   "include_dirs": true,
