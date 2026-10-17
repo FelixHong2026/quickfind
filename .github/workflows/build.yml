@@ -28,8 +28,12 @@ jobs:
         run: python -m py_compile src\quickfind.py src\quickfind_locales.py src\installer.py
 
       - name: Build QuickFind.exe
+        # NOTE: --icon / --add-data paths resolve relative to --specpath (build\), so use
+        # absolute paths here; otherwise PyInstaller looks for build\assets\quickfind.ico.
         run: >
           pyinstaller --noconfirm --onefile --windowed --name QuickFind
+          --icon "${{ github.workspace }}\assets\quickfind.ico"
+          --add-data "${{ github.workspace }}\assets\quickfind.ico;assets"
           --distpath release --workpath build\work --specpath build src\quickfind.py
 
       - name: Build QuickFind-Setup.exe
