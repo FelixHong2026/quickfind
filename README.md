@@ -59,8 +59,11 @@ It installs to `%LOCALAPPDATA%\Programs\QuickFind`, creates Start Menu + startup
 
 ### Option B — portable
 
-Download `QuickFind.exe` and put it in its own folder, e.g. `D:\Tools\QuickFind\`.
-Settings and index are written **next to the exe**.
+Download `QuickFind-portable.zip`, extract it anywhere, e.g. `D:\Tools\QuickFind\`, and run
+`QuickFind.exe` inside. Settings and index are written **next to the exe**.
+
+> Since 0.9.3 the build is a folder (`--onedir`), not a single .exe: startup is faster and nothing
+> is unpacked into `%TEMP%` on launch.
 
 ### Option C — from source
 
@@ -125,7 +128,8 @@ Anything you change in the UI is written back here.
 powershell -ExecutionPolicy Bypass -File build\build.ps1
 ```
 
-Produces `release\QuickFind.exe` (windowed) and `release\QuickFind-Setup.exe` (installer, embeds the first one).
+Produces `release\QuickFind\` (the app folder), `release\QuickFind-portable.zip` and
+`release\QuickFind-Setup.exe` (installer, embeds the whole folder).
 
 To update an existing installation in place:
 

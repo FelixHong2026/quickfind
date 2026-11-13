@@ -129,7 +129,7 @@ gh repo edit --add-topic file-search --add-topic directory-opus
 
 ### Install
 - **Installer** (recommended): `QuickFind-Setup.exe`
-- **Portable**: `QuickFind.exe` — settings and index are written next to the exe
+- **Portable**: `QuickFind-portable.zip` — extract anywhere; settings and index are written next to the exe
 - **From source**: `python src\quickfind.py`
 
 > Binaries are unsigned, so Windows SmartScreen may warn you. Build from source

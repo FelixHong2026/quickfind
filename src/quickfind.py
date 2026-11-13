@@ -103,8 +103,8 @@ def resolve_fm(cfg):
 
 # ---------------------------------------------------------------- meta
 APP_NAME = "QuickFind"
-VERSION = "0.9.2 Beta"
-BUILD = "20261017"
+VERSION = "0.9.3 Beta"
+BUILD = "20261113"
 DEVELOPER = "FelixHong"
 EMAIL = "fghsxp2026@126.com"
 

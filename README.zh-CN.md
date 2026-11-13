@@ -63,8 +63,10 @@
 
 ### 方式二：绿色版
 
-下载 `QuickFind.exe`，放到独立目录（如 `D:\Tools\QuickFind\`）。
-配置和索引会生成在 **exe 旁边**。
+下载 `QuickFind-portable.zip`，解压到任意目录（如 `D:\Tools\QuickFind\`），运行里面的
+`QuickFind.exe`。配置和索引会生成在 **exe 旁边**。
+
+> 0.9.3 起改成目录式打包（`--onedir`）：启动更快，也不再往 `%TEMP%` 解包。
 
 ### 方式三：从源码运行
 
@@ -129,7 +131,8 @@ python src\quickfind.py
 powershell -ExecutionPolicy Bypass -File build\build.ps1
 ```
 
-产出 `release\QuickFind.exe`（无控制台）和 `release\QuickFind-Setup.exe`（安装包，内嵌前一个）。
+产出 `release\QuickFind\`（程序目录）、`release\QuickFind-portable.zip` 和
+`release\QuickFind-Setup.exe`（安装包，内嵌整个目录）。
 
 就地更新已安装版本：
 

@@ -4,6 +4,25 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versioning is [SemVer](https://semver.org/).
 
+## [0.9.3 Beta] - 2026-11-13
+
+### Changed
+- **Switched to a `--onedir` build** (was `--onefile`). This is the fix for a real annoyance:
+  onefile re-extracted the whole ~14 MB bundle into `%TEMP%\_MEIxxxxxx` on **every** launch,
+  which made startup slower and left `_MEI*` folders behind whenever the process was killed
+  (e.g. by the installer, the uninstaller, or Task Manager). Those leftovers never got cleaned
+  up and quietly accumulated on C:.
+  * startup is noticeably faster — nothing is unpacked any more
+  * no more `%TEMP%\_MEI*` junk, ever
+  * the portable download is now `QuickFind-portable.zip` (a folder) instead of a single .exe
+- The installer now copies the whole program directory instead of a single executable, and
+  **preserves user data on upgrade** (`config.json`, `index.db`, `quickfind.log`) — the search
+  index is no longer thrown away when you install a new version.
+
+### Removed
+- The single-file portable `QuickFind.exe` artefact. Use either `QuickFind-Setup.exe`
+  (recommended) or `QuickFind-portable.zip`.
+
 ## [0.9.2 Beta] - 2026-10-17
 
 ### Added
