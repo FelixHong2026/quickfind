@@ -4,6 +4,27 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versioning is [SemVer](https://semver.org/).
 
+## [0.9.4 Beta] - 2026-11-13
+
+### Changed
+- **Auto-start now goes through a scheduled task with a 30-second logon delay**, instead of a
+  shortcut in the Startup folder. The shortcut fired the instant Windows showed the desktop, right
+  in the middle of everything else starting up; the hotkey did not need to be ready *that* early.
+  * login → 30 s → QuickFind starts → hotkey works. It never fires if you sign out first.
+  * no elevation needed — the task is registered for the current user with `LIMITED` rights
+  * upgrades clean up the old Startup shortcut automatically
+  * uninstall removes the task as well
+- Auto-start has a fallback: if `schtasks` fails for any reason the installer falls back to the
+  old Startup-folder shortcut, so the hotkey never silently stops working.
+
+### Fixed
+- **Upgrading while QuickFind was running failed** with `PermissionError [WinError 32]` —
+  the installer tried to overwrite a locked `QuickFind.exe`. It now terminates the running
+  instance first and polls `tasklist` until the file handles are actually released.
+  * this was why an in-place upgrade silently left the old version in place
+- The installer no longer claims `config.json` / `index.db` will be regenerated when they were
+  in fact preserved.
+
 ## [0.9.3 Beta] - 2026-11-13
 
 ### Changed
