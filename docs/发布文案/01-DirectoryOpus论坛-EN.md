@@ -1,9 +1,34 @@
 # Directory Opus 官方论坛 —— 发帖文案（英文）
 
-**发帖板块**：https://resource.dopus.com/ → 建议 `General Discussion` 或 `Tips & Tricks`（不要发到 Feature Requests）
-**标题（推荐）**：
+**论坛**：https://resource.dopus.com
 
-> `[Utility] QuickFind — instant file search that reveals & selects in Opus (MIT, open source)`
+**发到哪个分类**（2026-10 用官方 `/categories.json` API 核实的完整列表）：
+
+> ⭐ **发到 `Tools`** —— https://resource.dopus.com/c/tools/25
+> 官方说明：*"Share tools which are useful in combination with Opus."*
+> QuickFind 是配合 Opus 使用的外部工具，正是这个分类的定位。
+
+| id | 分类 | 主题数 | 说明 | 适合？ |
+|---|---|---|---|---|
+| **25** | **Tools** | 61 | Share tools which are useful in combination with Opus | ✅ **就发这里** |
+| 16 | Buttons/Scripts | 711 | Share finished Buttons, Scripts and other functional add-ons | ❌ 那是脚本/按钮/功能区插件 |
+| 34 | Viewer/VFS Plugins | 44 | Share plugins for Viewer, Thumbnails, Metadata and Archives | ❌ |
+| 30 | Rename Presets | 56 | Share finished Rename Presets, Buttons and Scripts | ❌ |
+| 11 | Help & Support | 44843 | Questions, suggestions and bug reports | ❌ 会被当成求助帖 |
+| 28 | New Releases | 587 | New versions of Directory Opus are posted here | ❌ 只能官方发 |
+| 29 | Off-Topic | 310 | Talk about almost anything | ❌ |
+
+**操作步骤**：
+1. 打开 https://resource.dopus.com/c/tools/25
+2. 右上角 **New Topic**
+3. 标题（见下）+ 正文（见下）
+4. **Tags** 建议加：`utility` `search` `workflow`
+
+---
+
+**标题（推荐 —— 不用方括号，改用 Tags）**：
+
+> `QuickFind — instant file search that reveals & selects in Opus (MIT, open source)`
 
 **备选标题**：
 
