@@ -27,3 +27,6 @@ tools/_*
 tools/dev/
 docs/icon/
 *.tmp
+
+# ---- 成品归档（二进制，不进 git；同版本在 GitHub Release 上）----
+_archive/
